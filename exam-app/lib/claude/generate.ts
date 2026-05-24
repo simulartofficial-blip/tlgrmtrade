@@ -1,6 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { GenerateRequest, Question, QuestionType } from '@/types'
-import { getKazanimsByTopic } from '@/lib/kazanimlar/mat6'
 
 const client = new Anthropic()
 
@@ -12,50 +11,44 @@ const questionTypeLabels: Record<QuestionType, string> = {
 }
 
 function buildPrompt(req: GenerateRequest): string {
-  const kazanimlar = getKazanimsByTopic(req.topic)
-  const kazanimText = kazanimlar
-    .map(k => `- ${k.code}: ${k.description}`)
-    .join('\n')
+  const typesList = req.question_types.map(t => questionTypeLabels[t]).join(', ')
 
-  const typesList = req.question_types
-    .map(t => questionTypeLabels[t])
-    .join(', ')
+  const kazanimLine = req.kazanim_code && req.kazanim_description
+    ? `HEDEF KAZANIM: ${req.kazanim_code} — ${req.kazanim_description}`
+    : `KONU: ${req.topic}`
 
   return `Sen deneyimli bir Türk matematik öğretmenisin. MEB 6. sınıf matematik müfredatına göre soru üretiyorsun.
 
-KONU: ${req.topic}
+${kazanimLine}
 ZORLUK: ${req.difficulty}
 SORU SAYISI: ${req.count}
 SORU TİPLERİ: ${typesList}
 
-İLGİLİ KAZANIMLAR:
-${kazanimText}
-
 KURALLAR:
 - Tüm sorular Türkçe olsun
-- Her soru gerçek hayat bağlamı kullansın (market, okul, spor vb.)
-- Sorular birbirinden farklı bağlamlarda olsun
-- Zorluk seviyesine uygun ol: kolay=tek adım, orta=iki adım, zor=çok adım
-- Çoktan seçmeli sorularda yalnızca bir doğru cevap olsun
-- Cevaplar mantıklı ve öğrenci seviyesine uygun olsun
+- Her soru farklı bir gerçek hayat bağlamı kullansın (market, okul, spor, yemek, seyahat vb.)
+- Yalnızca belirtilen kazanımı ölçen sorular üret — konunun dışına çıkma
+- Zorluk seviyesine uygun ol: kolay=tek adım, orta=iki adım, zor=çok adım/yorum gerektiren
+- Çoktan seçmeli sorularda yalnızca bir doğru cevap olsun, yanlış şıklar makul ama hatalı olsun
+- Boşluk doldurma sorularında boşluğu "___" ile göster
 
-ÇIKTI FORMATI (kesinlikle geçerli JSON döndür):
+ÇIKTI FORMATI (yalnızca geçerli JSON döndür, başka hiçbir şey yazma):
 {
   "questions": [
     {
       "type": "multiple_choice" | "open_ended" | "true_false" | "fill_blank",
       "text": "soru metni",
-      "options": ["A) ...", "B) ...", "C) ...", "D) ..."],  // sadece multiple_choice için
+      "options": ["A) ...", "B) ...", "C) ...", "D) ..."],
       "correct_answer": "doğru cevap",
-      "kazanim_code": "M.6.x.x.x",
-      "kazanim_description": "kazanım açıklaması",
+      "kazanim_code": "${req.kazanim_code ?? ''}",
+      "kazanim_description": "${req.kazanim_description ?? req.topic}",
       "difficulty": "${req.difficulty}",
       "explanation": "kısa çözüm açıklaması"
     }
   ]
 }
 
-Şimdi ${req.count} adet soru üret.`
+${req.count} adet soru üret.`
 }
 
 export async function generateQuestions(req: GenerateRequest): Promise<Question[]> {

@@ -32,6 +32,8 @@ export interface GenerateRequest {
   difficulty: DifficultyLevel
   question_types: QuestionType[]
   count: number
+  kazanim_code?: string
+  kazanim_description?: string
 }
 
 export interface Exam {
