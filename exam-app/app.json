@@ -2,6 +2,7 @@
   "expo": {
     "name": "SınavAI",
     "slug": "sinav-ai",
+    "owner": "fuchsfunny",
     "scheme": "sinavai",
     "version": "1.0.0",
     "orientation": "portrait",
