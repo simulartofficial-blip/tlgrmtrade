@@ -43,6 +43,7 @@ export interface Exam {
   grade: number
   subject: string
   topic: string
+  difficulty: DifficultyLevel
 }
 
 export interface User {

@@ -36,7 +36,7 @@ const QUESTION_TYPES: { value: QuestionType; label: string; description: string;
 ]
 
 interface Props {
-  onGenerated: (questions: Question[]) => void
+  onGenerated: (questions: Question[], topic: string, difficulty: string) => void
 }
 
 export function GenerateForm({ onGenerated }: Props) {
@@ -77,7 +77,7 @@ export function GenerateForm({ onGenerated }: Props) {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
-      onGenerated(data.questions)
+      onGenerated(data.questions, form.topic, form.difficulty)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Beklenmeyen hata')
     } finally {
