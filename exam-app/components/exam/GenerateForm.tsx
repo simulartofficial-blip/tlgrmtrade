@@ -6,12 +6,33 @@ import { Select } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { GenerateRequest, QuestionType, DifficultyLevel, Question } from '@/types'
 import { getTopics } from '@/lib/kazanimlar/mat6'
+import { List, PenLine, ToggleLeft, Pencil } from 'lucide-react'
 
-const QUESTION_TYPES: { value: QuestionType; label: string }[] = [
-  { value: 'multiple_choice', label: 'Çoktan Seçmeli' },
-  { value: 'open_ended', label: 'Açık Uçlu' },
-  { value: 'true_false', label: 'Doğru / Yanlış' },
-  { value: 'fill_blank', label: 'Boşluk Doldurma' },
+const QUESTION_TYPES: { value: QuestionType; label: string; description: string; icon: React.ReactNode }[] = [
+  {
+    value: 'multiple_choice',
+    label: 'Çoktan Seçmeli',
+    description: 'A, B, C, D şıklı',
+    icon: <List className="w-5 h-5" />,
+  },
+  {
+    value: 'open_ended',
+    label: 'Açık Uçlu',
+    description: 'Yazılı cevap',
+    icon: <PenLine className="w-5 h-5" />,
+  },
+  {
+    value: 'true_false',
+    label: 'Doğru / Yanlış',
+    description: 'İki seçenekli',
+    icon: <ToggleLeft className="w-5 h-5" />,
+  },
+  {
+    value: 'fill_blank',
+    label: 'Boşluk Doldurma',
+    description: 'Eksik kelime',
+    icon: <Pencil className="w-5 h-5" />,
+  },
 ]
 
 interface Props {
@@ -85,20 +106,34 @@ export function GenerateForm({ onGenerated }: Props) {
       </Select>
 
       <div>
-        <label className="text-sm font-medium text-gray-700 block mb-2">Soru Tipleri</label>
+        <label className="text-sm font-medium text-gray-700 block mb-2">
+          Soru Tipi
+          <span className="ml-1 font-normal text-gray-400">(birden fazla seçilebilir)</span>
+        </label>
         <div className="grid grid-cols-2 gap-2">
-          {QUESTION_TYPES.map(({ value, label }) => (
-            <label key={value} className="flex items-center gap-2 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={form.question_types.includes(value)}
-                onChange={() => toggleType(value)}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              <span className="text-sm text-gray-700">{label}</span>
-            </label>
-          ))}
+          {QUESTION_TYPES.map(({ value, label, description, icon }) => {
+            const selected = form.question_types.includes(value)
+            return (
+              <button
+                key={value}
+                type="button"
+                onClick={() => toggleType(value)}
+                className={`flex flex-col items-start gap-1 rounded-xl border-2 p-3 text-left transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 ${
+                  selected
+                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                <div className={`${selected ? 'text-blue-500' : 'text-gray-400'}`}>{icon}</div>
+                <span className="text-xs font-semibold leading-tight">{label}</span>
+                <span className={`text-xs ${selected ? 'text-blue-500' : 'text-gray-400'}`}>{description}</span>
+              </button>
+            )
+          })}
         </div>
+        {!form.question_types.length && (
+          <p className="mt-1 text-xs text-amber-600">En az bir soru tipi seçin</p>
+        )}
       </div>
 
       <Input
