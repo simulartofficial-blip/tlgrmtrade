@@ -1,0 +1,41 @@
+name: Android APK Build
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build APK (EAS Cloud)
+        run: eas build --platform android --profile preview --non-interactive --json > build-output.json
+
+      - name: Get download URL
+        run: |
+          URL=$(cat build-output.json | python3 -c "import sys,json; data=json.load(sys.stdin); print(data[0]['artifacts']['buildUrl'] if isinstance(data, list) else data.get('artifacts', {}).get('buildUrl', 'URL bulunamadı'))")
+          echo "## ✅ APK Hazır!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**İndir:** $URL" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Veya [expo.dev/accounts/fuchsfunny/builds](https://expo.dev/accounts/fuchsfunny/builds) adresinden indir." >> $GITHUB_STEP_SUMMARY
