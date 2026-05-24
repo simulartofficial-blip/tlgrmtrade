@@ -1,4 +1,3 @@
-import '../global.css'
 import { useEffect, useState } from 'react'
 import { Stack, router } from 'expo-router'
 import { Session } from '@supabase/supabase-js'
